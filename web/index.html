@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; cursor: default; user-select: none; }
+  canvas { display: block; }
+  #msg { position: fixed; left: 24px; bottom: 24px; color: #fff; font: 14px -apple-system, sans-serif;
+         background: rgba(0,0,0,.55); padding: 10px 14px; border-radius: 10px; white-space: pre-line; display: none; }
+  /* กล่องคำพูดข้างตัวละคร แบบหน้าล็อบบี้ของเกม */
+  #dlg { position: fixed; left: 0; top: 0; max-width: min(440px, 34vw); padding: 16px 22px 17px;
+         background: rgba(255,255,255,.94); color: #2a3550; border-radius: 16px;
+         box-shadow: 0 6px 22px rgba(20,30,60,.22), 0 0 0 1px rgba(255,255,255,.6) inset;
+         font-family: "Sukhumvit Set", "Thonburi", -apple-system, sans-serif; pointer-events: none;
+         opacity: 0; transform: translate(-100%, -50%) scale(.92); transform-origin: right center;
+         transition: opacity .28s ease, transform .28s cubic-bezier(.2,.9,.3,1.25); }
+  #dlg.show { opacity: 1; transform: translate(-100%, -50%) scale(1); }
+  #dlg.right { transform: translate(0, -50%) scale(.92); transform-origin: left center; }
+  #dlg.right.show { transform: translate(0, -50%) scale(1); }
+  #dlg .text { font-size: 21px; line-height: 1.55; font-weight: 500; }
+  #dlg .ja { font-size: 13px; color: #7a86a0; margin-top: 6px; }
+  #dlg .ja:empty { display: none; }
+  /* หางชี้ไปทางตัวละคร */
+  #dlg::after { content: ""; position: absolute; top: 50%; right: -11px; margin-top: -10px;
+                border: 10px solid transparent; border-right: 0; border-left: 12px solid rgba(255,255,255,.94); }
+  #dlg.right::after { right: auto; left: -11px; border-left: 0; border-right: 12px solid rgba(255,255,255,.94); }
+</style>
+</head>
+<body>
+<div id="msg"></div>
+<div id="dlg"><div class="text"></div><div class="ja"></div></div>
+<script src="lib/pixi.min.js"></script>
+<script>
+// โหลดตัวเล่น Spine ให้ตรงเวอร์ชันของตัวละคร *ก่อน* สร้าง renderer
+// (spine-pixi-v7 ลงทะเบียนตัววาด dark tint ไว้กับ PIXI ถ้ามาทีหลัง ชุดที่ใช้ tint black จะวาดไม่ขึ้น)
+(async () => {
+  const load = src => new Promise((ok, fail) => {
+    const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s);
+  });
+  let runtime = 'lib/spine-pixi-v7.min.js';
+  try {
+    const want = new URLSearchParams(location.search).get('char');
+    const list = await (await fetch('ba://local/api/chars')).json();
+    const c = list.find(x => x.name === want) || list[0];
+    if (c) {
+      const buf = new Uint8Array(await (await fetch(c.skel)).arrayBuffer()).slice(0, 256);
+      const m = String.fromCharCode(...buf).match(/([34])\.(\d+)\.\d+/);
+      if (m && (+m[1] < 4 || (+m[1] === 4 && +m[2] < 2))) runtime = 'lib/pixi-spine.js';
+    }
+  } catch (e) { console.error(e); }
+  window.__spineRuntime = runtime;
+  await load(runtime);
+  await load('app.js');
+})();
+</script>
+</body>
+</html>

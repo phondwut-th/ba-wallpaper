@@ -1,0 +1,14 @@
+# ไฟล์ของเกม (ลิขสิทธิ์ NEXON Games / Yostar) — ดึงเองด้วย tools/
+characters/
+music/
+previews/
+assets/
+.cache/
+
+# ไฟล์ที่สร้างขึ้นเอง
+BAWallpaper.app/
+.venv/
+*.zip
+*.log
+__pycache__/
+.DS_Store
